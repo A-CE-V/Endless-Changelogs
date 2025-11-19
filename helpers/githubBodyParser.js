@@ -1,9 +1,6 @@
-// helpers/githubBodyParser.js
-
 function parseReleaseBody(body) {
     if (!body) return [];
   
-    // 1. Split the text by new lines (handle Windows or Unix line endings)
     const lines = body.split(/\r?\n/);
   
     return lines

@@ -23,7 +23,6 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// --- Main Changelog API Endpoint ---
 app.get('/api/changelog', async (req, res) => {
     const GITHUB_PAT = process.env.GITHUB_PAT;
     const REPO_OWNER = process.env.REPO_OWNER;
@@ -55,12 +54,12 @@ app.get('/api/changelog', async (req, res) => {
             .map(release => ({
                 // Basic Info
                 version: release.tag_name,
-                title: release.name || release.tag_name, // Release titles (e.g. "The Winter Update")
-                date: release.published_at, // Keep full ISO date for better formatting on front-end
+                title: release.name || release.tag_name, 
+                date: release.published_at, 
                 
                 // Meta Data
-                html_url: release.html_url, // Link to the actual view on GitHub
-                is_prerelease: release.prerelease, // True/False
+                html_url: release.html_url, 
+                is_prerelease: release.prerelease, 
                 
                 // Author Info
                 author: {
@@ -69,7 +68,7 @@ app.get('/api/changelog', async (req, res) => {
                     url: release.author.html_url
                 },
 
-                // The Content
+                // The Content (Now returns an array of Strings)
                 changes: parseReleaseBody(release.body), 
             }));
 
