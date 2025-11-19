@@ -8,18 +8,15 @@ const { parseReleaseBody } = require('./helpers/githubBodyParser');
 const app = express();
 const port = process.env.PORT || 3000;
 
-const allowedOriginsStr = process.env.ALLOWED_ORIGINS
+const allowedOriginsStr = process.env.ALLOWED_ORIGINS || "";
 const allowedOrigins = allowedOriginsStr.split(',').map(s => s.trim());
-
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true); 
-    
+    if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    
     const msg = `The CORS policy for this site does not allow access from the Origin: ${origin}`;
     return callback(new Error(msg), false);
   }
@@ -56,8 +53,23 @@ app.get('/api/changelog', async (req, res) => {
         const formattedChangelog = releases
             .filter(release => !release.draft)
             .map(release => ({
+                // Basic Info
                 version: release.tag_name,
-                date: new Date(release.published_at).toISOString().split('T')[0],
+                title: release.name || release.tag_name, // Release titles (e.g. "The Winter Update")
+                date: release.published_at, // Keep full ISO date for better formatting on front-end
+                
+                // Meta Data
+                html_url: release.html_url, // Link to the actual view on GitHub
+                is_prerelease: release.prerelease, // True/False
+                
+                // Author Info
+                author: {
+                    username: release.author.login,
+                    avatar: release.author.avatar_url,
+                    url: release.author.html_url
+                },
+
+                // The Content
                 changes: parseReleaseBody(release.body), 
             }));
 
@@ -70,7 +82,6 @@ app.get('/api/changelog', async (req, res) => {
 });
 
 app.get("/health", (req, res) => res.send({ status: "OK", uptime: process.uptime() }));
-
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
